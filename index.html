@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+            <title>Canvas</title>
+    </head>
+    <Body>
+            <canvas id="canvas" width="300" height="300"></canvas> <br/>
+            <input type="button" onclick="draw()" value="draw"/> <br/>
+            <input type="button" onclick="remove()" value="clear"/> <br/>
+            <script>
+                var canvas = document.getElementById("canvas");
+                var ctx = canvas.getContext("2d");
+                function draw() {
+                    ctx.fillStyle  = "black";
+                    ctx.fillrect(0, 0, 30, 30);
+                }
+                function remove() {
+                    ctx.clearRect(0, 0, 300, 300);
+                }
+            </script>
+    </Body>
+</html>
