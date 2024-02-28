@@ -23,6 +23,7 @@
         ]
         tick:function() {
             game.tickNumber++;
+            snake.move();
             graphics.drawGame();
             game.timer = window.setTimeout("game.tick()", 500);
         }
@@ -35,6 +36,9 @@
         ],
         facing: "E"
         move: function() {
+          var location = {x: 5, y: 2};
+          snake.parts.unshift(location);
+          snake.parts.pop();
         }
       };
     var graphics = {

@@ -8,7 +8,7 @@
     <script>
       var game = {
         tickNumber: 0,
-        timer; null,
+        timer: null,
         board: [
           "###############",
           "#             #",
@@ -20,11 +20,12 @@
           "#             #",
           "#             #",
           "###############"
-        ]
-        tick:function() {
-            game.tickNumber++;
-            graphics.drawGame();
-            game.timer = window.setTimeout("game.tick()", 500);
+        ],
+        tick: function() {
+          game.tickNumber++;
+          snake.move();
+          graphics.drawGame();
+          game.timer = window.setTimeout("game.tick()", 500);
         }
       };
       var snake = {
@@ -33,8 +34,21 @@
           {x: 3, y: 2},
           {x: 2, y: 2}
         ],
-        facing: "E"
+        facing: "E",
+        nextLocation: function() {
+          var snakeHead = snake.parts[0];
+          var targetX = snakeHead.x;
+          var targetY = snakeHead.y;
+          targetY = snake.facing == "N" ? targetY-1 : targetY;
+          targetY = snake.facing == "S" ? targetY+1 : targetY;
+          targetX = snake.facing == "W" ? targetX-1 : targetX;
+          targetX = snake.facing == "E" ? targetX+1 : targetX;
+          return {x: targetX, y: targetY};
+        },
         move: function() {
+          var location = snake.nextLocation();
+          snake.parts.unshift(location);
+          snake.parts.pop();
         }
       };
     var graphics = {
@@ -65,15 +79,15 @@
       },
       drawGame: function () {
         var ctx = graphics.canvas.getContext("2d");
+        ctx.clearRect(0, 0, graphics.canvas.width, graphics.canvas.height);
         graphics.drawBoard(ctx);
         graphics.drawSnake(ctx);
       }
     };
-    graphics.drawGame();
     var gameControl = {
-        startGame: function () {
-            game.tick();
-        }
+      startGame: function () {
+        game.tick();
+      }
     };
     gameControl.startGame();
   </script>
