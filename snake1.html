@@ -4,7 +4,7 @@
         <title>snake</title>
     </head>
     <body>
-        <canvas id="canvas" width="'1024" height="1024"><</canvas>
+        <canvas id="canvas" width="1024" height="1024"></canvas>
         <script>
             var board = [
                 "###############",
@@ -17,23 +17,56 @@
                 "#              #",
                 "#              #",
                 "###############",
-
-            ];
-            var canvas = document.getElementbyid("canvas");
-            var ctx = canvas.getContext("2d");
+                var snake = {
+                    part: [
+                        {x: 4, y: 2},
+                        {x: 3, y: 2},
+                        {x: 2, y: 2},
+                    ],
+                    facing: "E"
+                };
+            var canvas = document.getElementByid("canvas");
+            var ctx = graphics.canvas.getContext("2d");
             var currentYoffset = 0;
             var squareSize = 30;
-            board.forEach(function checkLine(line) {
+            game.board.forEach(function checkLine(line) {
+                var graphics = {
+                    drawboard: function() {
+                        var currentYoffset = 0;
+                        var canvas = document.getElementById("canvas");
+                    }
+                }
                 line = line.split('');
                 var currentXoffset = 0;
                 line.forEach(function checkCharacter(character) {
                     if(character == '#') {
-                        ctx.fillStyle = "black";
-                        ctx.fillRect(currentXoffset, currentYoffset, squareSize, squareSize);
+                drawSnake: function(ctx) {
+                    snake.part.forEach(function drawPart(part) {
+                        var partXlocation = part.x * graphics.squaresize
+                        var partXlocation = part.y * graphics.squaresize
+                        ctx.fillStyle = "green";
+                        ctx.fillRect(partXlocation, partYlocation, graphics. squareSize, graphics.squareSize);
                     }
-                currentXoffset += squareSize;
-                });
-                currentYoffset += squareSize;
+                    var ctx = graphics.canvas.getContext("2d");
+                    snake.parts.forEach(function drawPart(part) {
+                        var partXlocation = part.x * graphics.squaresSize;
+                        var partYlocation = part.y * graphics.squareSize;
+                        ctx.fillStyle = "black";
+                        ctx.fillRect(currentXoffset, currentYoffset, graphics. squareSize, graphics.squareSize);
+                    });
+                },
+            };
+    var graphics = {
+        drawGame: function () {
+            var ctx = graphics.canvas.getContext("2d");
+            graphics.drawboard(ctx);
+            graphics.drawsnake(ctx);
+        }
+    };
+    graphics.drawGame();
+                currentXoffset += graphics.squareSize;
+            });
+                currentYoffset += graphics.squareSize;
             });
         </script>
     </body>
