@@ -9,6 +9,7 @@
       var game = {
         tickNumber: 0,
         timer: null,
+        score: 0,
         board: [
           "###############",
           "#             #",
@@ -27,19 +28,49 @@
         tick: function() {
           window.clearTimeout(game.timer);
           game.tickNumber++;
+          if(game.tickNumber % 10 == 0) {
+            game.addRandomFruit();
+          }
           var result = snake.move();
           if(result == "gameover") {
-            alert("Game over!");
+            alert("Game over! Player Scored: " + game.score);
             return;
           }
           graphics.drawGame();
           game.timer = window.setTimeout("game.tick()", 500);
+        },
+        addRandomFruit: function() {
+          var randomY = Math.floor(Math.random() * game.board.length) + 0;
+          var randomX = Math.floor(Math.random() * game.board[randomY].length) + 0;
+          var randomLocation = {x: randomX, y: randomY};
+          if(game.isEmpty(randomLocation) && !game.isFruit(randomLocation)) {
+            game.fruit.push(randomLocation);
+          }
         },
         isEmpty: function(location) {
           return game.board[location.y][location.x] == ' ';
         },
         isWall: function(location) {
           return game.board[location.y][location.x] == '#';
+        },
+        isFruit: function(location) {
+          for (var fruitNumber = 0; fruitNumber < game.fruit.length; fruitNumber++){
+            var fruit = game.fruit[fruitNumber];
+            if(location.x == fruit.x && location.y == fruit.y) {
+              game.fruit.splice(fruitNumber, 1);
+              return true;
+            }
+          }
+          return false;
+        },
+        isSnake: function(location) {
+          for (var snakePart = 0; snakePart < snake.parts.length; snakePart++) {
+            var part = snake.parts[snakePart];
+            if(location.x == part.x && location.y == part.y) {
+              return true;
+            }
+          }
+          return false;
         }
       };
       var snake = {
@@ -59,14 +90,19 @@
           targetX = snake.facing == "E" ? targetX+1 : targetX;
           return {x: targetX, y: targetY};
         },
-        move: function() {
+        move: function () {
           var location = snake.nextLocation();
+          if(game.isWall(location)
+            || game.isSnake(location)) {
+            return "gameover";
+          }
           if(game.isEmpty(location)) {
             snake.parts.unshift(location);
             snake.parts.pop();
           }
-          if(game.isWall(location)) {
-            return "gameover";
+          if(game.isFruit(location)) {
+            snake.parts.unshift(location);
+            game.score++;
           }
         }
       };
@@ -100,18 +136,18 @@
         var ctx = graphics.canvas.getContext("2d");
         ctx.clearRect(0, 0, graphics.canvas.width, graphics.canvas.height);
         graphics.drawBoard(ctx);
-        graphics.draw(ctx, snake.parts, "green");
         graphics.draw(ctx, game.fruit, "red");
+        graphics.draw(ctx, snake.parts, "green");
       }
     };
     var gameControl = {
       processInput: function(keyPressed) {
         var key = keyPressed.key.toLowerCase();
         var targetDirection = snake.facing;
-        if(key == "w") targetDirection = "N";
-        if(key == "a") targetDirection = "W";
-        if(key == "s") targetDirection = "S";
-        if(key == "d") targetDirection = "E";
+        if(key == "w" && snake.facing != "S") targetDirection = "N";
+        if(key == "a" && snake.facing != "E") targetDirection = "W";
+        if(key == "s" && snake.facing != "N") targetDirection = "S";
+        if(key == "d" && snake.facing != "W") targetDirection = "E";
         snake.facing = targetDirection;
         game.tick();
       },
