@@ -22,10 +22,21 @@
           "###############"
         ],
         tick: function() {
+          window.clearTimeout(game.timer);
           game.tickNumber++;
-          snake.move();
+          var result = snake.move();
+          if(result == "gameover") {
+            alert("Game over!");
+            return;
+          }
           graphics.drawGame();
           game.timer = window.setTimeout("game.tick()", 500);
+        },
+        isEmpty: function(location) {
+          return game.board[location.y][location.x] == ' ';
+        },
+        isWall: function(location) {
+          return game.board[location.y][location.x] == '#';
         }
       };
       var snake = {
@@ -47,8 +58,13 @@
         },
         move: function() {
           var location = snake.nextLocation();
-          snake.parts.unshift(location);
-          snake.parts.pop();
+          if(game.isEmpty(location)) {
+            snake.parts.unshift(location);
+            snake.parts.pop();
+          }
+          if(game.isWall(location)) {
+            return "gameover";
+          }
         }
       };
     var graphics = {
@@ -86,13 +102,14 @@
     };
     var gameControl = {
       processInput: function(keyPressed) {
-        var key = keyPressed.key.tolowerCase();
+        var key = keyPressed.key.toLowerCase();
         var targetDirection = snake.facing;
         if(key == "w") targetDirection = "N";
         if(key == "a") targetDirection = "W";
         if(key == "s") targetDirection = "S";
         if(key == "d") targetDirection = "E";
         snake.facing = targetDirection;
+        game.tick();
       },
       startGame: function () {
         window.addEventListener("keypress", gameControl.processInput, false);
