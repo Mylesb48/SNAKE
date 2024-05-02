@@ -1,17 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Run!</title>
+  <title>Jumping Game</title>
 </head>
 <body>
   <canvas id="canvas" width="480" height="640"></canvas>
   <script>
     var canvas = document.getElementById("canvas");
     var ctx = canvas.getContext("2d");
-    function floor(y, width) {
+
+    // Define the floor class
+    function Floor(y, width) {
       this.y = y;
       this.width = width;
     }
+
     var world = {
       height: 640,
       width: 480,
@@ -23,13 +26,13 @@
       tilesPassed: 0,
       autoScroll: true,
       floorTiles: [
-        new floor(400, 100)
+        new Floor(400, 100)
       ],
       stop: function() {
         this.autoScroll = false;
       },
       moveFloor: function() {
-        for(index in this.floorTiles) {
+        for(var index = 0; index < this.floorTiles.length; index++) {
           var tile = this.floorTiles[index];
           tile.y -= player.jumpHeight;
           this.distanceTravelled += player.jumpHeight;
@@ -46,11 +49,11 @@
         }
         var randomWidth = Math.floor(Math.random() * biggestJumpableWidth) + player.width;
         var topValue = (previousTile.y - previousTile.width);
-        var next = new floor(topValue, randomWidth);
+        var next = new Floor(topValue, randomWidth);
         this.floorTiles.push(next);
       },
       cleanOldTiles: function() {
-        for(index in this.floorTiles) {
+        for(var index = 0; index < this.floorTiles.length; index++) {
           if(this.floorTiles[index].y <= -this.floorTiles[index].width) {
             this.floorTiles.splice(index, 1);
             this.tilesPassed++;
@@ -61,7 +64,7 @@
         }
       },
       getDistanceToFloor: function(playerY) {
-        for(index in this.floorTiles) {
+        for(var index = 0; index < this.floorTiles.length; index++) {
           var tile = this.floorTiles[index];
           if(tile.y <= playerY && tile.y + tile.width >= playerY) {
             return tile.width;
@@ -79,11 +82,11 @@
       },
       draw: function() {
         ctx.fillStyle = "black";
-        ctx.fillRect (0, 0, this.width, this.height);
-        for(index in this.floorTiles) {
+        ctx.fillRect(0, 0, this.width, this.height);
+        for(var index = 0; index < this.floorTiles.length; index++) {
           var tile = this.floorTiles[index];
           ctx.fillStyle = "blue";
-          ctx.fillRect(0, tile.y, tile.width, tile.width);
+          ctx.fillRect(0, tile.y, this.width, tile.width);
         }
         ctx.fillStyle = "white";
         ctx.font = "28px Arial";
@@ -91,34 +94,36 @@
         ctx.fillText("Travelled: " + this.distanceTravelled, 10, 75);
       }
     };
+
     var player = {
       x: 40,
-      y: 640 - 100,
+      y: 540,
       height: 20,
       width: 20,
       downwardForce: world.gravity,
-      jumpHeight: -10,
-      getDistanceFor: function(y) {
-        var platformLeft = world.getDistanceToFloor(y);
-        return this.x - platformLeft;
+      jumpHeight: 0,
+      jumping: false,
+      jump: function() {
+        if(!this.jumping) {
+          this.jumpHeight = world.jumpForce;
+          this.jumping = true;
+        }
       },
       applyGravity: function() {
-        if(this.y >= world.height - this.height) {
-          this.jumpHeight = 0;
-          return;
-        }
-        this.y += this.jumpHeight;
-        var leftSideDistance = this.getDistanceFor(this.y);
-        if(leftSideDistance < 0) {
-          world.stop();
+        if (this.y >= world.height - this.height) {
+          this.jumping = false;
+          this.y = world.height - this.height;
+        } else {
+          this.jumpHeight += world.gravity;
+          this.y += this.jumpHeight;
         }
       },
       processGravity: function() {
         this.applyGravity();
       },
       keyPress: function(keyInfo) {
-        if(this.y >= world.height - this.height) {
-          this.jumpHeight = world.jumpForce;
+        if (keyInfo.keyCode == 32) { // Space key
+          this.jump();
         }
       },
       tick: function() {
@@ -126,17 +131,20 @@
       },
       draw: function() {
         ctx.fillStyle = "green";
-        ctx.fillRect(player.x, player.y, this.width, this.height);
+        ctx.fillRect(this.x, this.y, this.width, this.height);
       }
     };
+
     window.addEventListener("keypress", function(keyInfo) { player.keyPress(keyInfo); }, false);
+
     function tick() {
       player.tick();
       world.tick();
       world.draw();
       player.draw();
-      window.setTimeout("tick()", 1000/60);
+      window.requestAnimationFrame(tick);
     }
+
     tick();
   </script>
 </body>
