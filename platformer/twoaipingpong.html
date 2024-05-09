@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Table Tennis</title>
+</head>
+<body>
+  <canvas id="game" width="640" height="480"></canvas>
+  <script>
+    var canvas = document.getElementById("game");
+    var ctx = canvas.getContext("2d");
+    
+    function paddle(x, y, width, height) {
+      this.x = x;
+      this.y = y;
+      this.width = width;
+      this.height = height;
+      this.speedModifier = 0;
+      this.hasCollidedWith = function(ball) {
+        var paddleLeftWall = this.x;
+        var paddleRightWall = this.x + this.width;
+        var paddleTopWall = this.y;
+        var paddleBottomWall = this.y + this.height;
+        if(ball.x > paddleLeftWall 
+          && ball.x < paddleRightWall
+          && ball.y > paddleTopWall
+          && ball.y < paddleBottomWall) {
+          return true;
+        }
+        return false;
+      };
+      this.move = function(direction) {
+        var nextY = this.y;
+        if(direction === 'down') {
+          nextY += 5;
+          this.speedModifier = 1.5;
+        } else if(direction === 'up') {
+          nextY -= 5;
+          this.speedModifier = 1.5;
+        } else {
+          this.speedModifier = 0;
+        }
+        nextY = Math.max(0, Math.min(nextY, 480 - this.height)); // Ensure within bounds
+        this.y = nextY;
+      };
+    }
+    
+    var player = new paddle (5, 200, 25, 100);
+    var ai1 = new paddle (610, 200, 25, 100); // AI paddle 1
+    var ai2 = new paddle (30, 200, 25, 100); // AI paddle 2
+    
+    var paddles = [ai1, ai2]; // Array of AI paddles
+    
+    var ball = { x: 320, y: 240, radius: 7, xSpeed: 2, ySpeed: 0,
+      reverseX: function() {
+        this.xSpeed *= -1;
+      },
+      reverseY: function() {
+        this.ySpeed *= -1;
+      },
+      reset: function () {
+        this.x = 320;
+        this.y = 240;
+        this.xSpeed = 2;
+        this.ySpeed = 0;
+      },
+      isBouncing: function() {
+        return ball.ySpeed !== 0;
+      },
+      modifyXSpeedBy: function(modification) {
+        modification = this.xSpeed < 0 ? modification * -1 : modification;
+        var nextValue = this.xSpeed + modification;
+        nextValue = Math.abs(nextValue) > 9 ? 9 : nextValue;
+        this.xSpeed = nextValue;
+      },
+      modifyYSpeedBy: function(modification) {
+        modification = this.ySpeed < 0 ? modification * -1 : modification;
+        this.ySpeed += modification;
+      }
+    };
+    
+    function tick() {
+      updateGame();
+      draw();
+      window.setTimeout(tick, 1000/60);
+    }
+    
+    function updateGame() {
+      ball.x += ball.xSpeed;
+      ball.y += ball.ySpeed;
+      
+      if(ball.x < 0 || ball.x > 640) {
+        ball.reset();
+      }
+      
+      if(ball.y <= 0 || ball.y >= 480) {
+        ball.reverseY();
+      }
+      
+      var collidedWithPlayer = player.hasCollidedWith(ball);
+      
+      for (var i = 0; i < paddles.length; i++) {
+        var collidedWithAi = paddles[i].hasCollidedWith(ball);
+        if (collidedWithAi) {
+          ball.reverseX();
+          ball.modifyXSpeedBy(0.25);
+          var speedUpValue = paddles[i].speedModifier;
+          ball.modifyYSpeedBy(speedUpValue);
+        }
+      }
+      
+      for (var keyCode in heldDown) {
+        player.move(keyCode);
+      }
+      
+      for (var i = 0; i < paddles.length; i++) {
+        var aiMiddle = paddles[i].y + (paddles[i].height / 2);
+        if (aiMiddle < ball.y) {
+          paddles[i].move('down');
+        }
+        if (aiMiddle > ball.y) {
+          paddles[i].move('up');
+        }
+      }
+    }
+    
+    function draw() {
+      ctx.fillStyle = "black";
+      ctx.fillRect(0, 0, 640, 480);
+      renderPaddle(player);
+      for (var i = 0; i < paddles.length; i++) {
+        renderPaddle(paddles[i]);
+      }
+      renderBall(ball);
+    }
+    
+    function renderPaddle(paddle) {
+      ctx.fillStyle = "blue";
+      ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+    }
+    
+    function renderBall(ball) {
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.radius, 0, 2 * Math.PI, false);
+      ctx.fillStyle = "pink";
+      ctx.fill();
+    }
+    
+    var heldDown = {};
+    window.addEventListener("keydown", function(keyInfo) { heldDown[event.keyCode] = true; }, false);
+    window.addEventListener("keyup", function(keyInfo) { delete heldDown[event.keyCode]; }, false);
+    tick();
+  </script>
+</body>
+</html>

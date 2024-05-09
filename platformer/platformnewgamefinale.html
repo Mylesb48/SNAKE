@@ -19,12 +19,12 @@
       height: 640,
       width: 480,
       gravity: 0.5,
-      highestFloor: 300,
+      highestFloor: 400,
       jumpForce: -10,
       distanceTravelled: 0,
       maxSpeed: 15,
       tilesPassed: 0,
-      autoScroll: true,
+      autoScroll: false,
       floorTiles: [
         new Floor(400, 100)
       ],
@@ -63,15 +63,16 @@
           }
         }
       },
-      getDistanceToFloor: function(playerY) {
-        for(var index = 0; index < this.floorTiles.length; index++) {
-          var tile = this.floorTiles[index];
-          if(tile.y <= playerY && tile.y + tile.width >= playerY) {
-            return tile.width;
-          }
-        }
-        return -1;
-      },
+      getDistanceToFloor: function(playerX, playerY) {
+  for(var index = 0; index < this.floorTiles.length; index++) {
+    var tile = this.floorTiles[index];
+    if(playerX + player.width >= 0 && playerX <= world.width &&
+       tile.y <= playerY + player.height && tile.y + tile.width >= playerY) {
+      return tile.width;
+    }
+  }
+  return -1;
+},
       tick: function() {
         if(!this.autoScroll) {
           return;
@@ -97,7 +98,7 @@
 
     var player = {
       x: 40,
-      y: 540,
+      y: 54,
       height: 20,
       width: 20,
       downwardForce: world.gravity,
